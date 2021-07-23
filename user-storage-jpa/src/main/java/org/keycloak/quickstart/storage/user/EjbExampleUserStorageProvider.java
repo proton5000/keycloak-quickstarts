@@ -30,6 +30,8 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
+import org.keycloak.quickstart.storage.user.dto.EmployeeZUPDTO;
+import org.keycloak.quickstart.storage.user.service.RestService;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
@@ -42,13 +44,7 @@ import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -66,6 +62,8 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 {
     private static final Logger logger = Logger.getLogger(EjbExampleUserStorageProvider.class);
     public static final String PASSWORD_CACHE_KEY = UserAdapter.class.getName() + ".password";
+
+    public static final RestService restService = new RestService();
 
     @PersistenceContext
     protected EntityManager em;
@@ -104,27 +102,62 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
         logger.info("getUserById: " + id);
-        String persistenceId = StorageId.externalId(id);
-        UserEntity entity = em.find(UserEntity.class, persistenceId);
-        if (entity == null) {
+        List<EmployeeZUPDTO> result = null;
+        StorageId sid = new StorageId(id);
+        logger.info("getExternalId: " + sid.getExternalId());
+        try {
+            result = restService.getUserByEmployeeId(sid.getExternalId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (Objects.nonNull(result) && result.isEmpty()) {
             logger.info("could not find user by id: " + id);
             return null;
+        } else if (Objects.isNull(result)) {
+            logger.info("The find response by user with id: " + id + " is null");
+            return null;
         }
+
+        EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
+
+        UserEntity entity = new UserEntity();
+        entity.setUsername(employeeZUPDTOOne.getPhone());
+        entity.setEmail(employeeZUPDTOOne.getEmail());
+        entity.setId(employeeZUPDTOOne.getId());
+        entity.setPhone(employeeZUPDTOOne.getPhone());
+
         return new UserAdapter(session, realm, model, entity);
     }
 
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
         logger.info("getUserByUsername: " + username);
-        TypedQuery<UserEntity> query = em.createNamedQuery("getUserByUsername", UserEntity.class);
-        query.setParameter("username", username);
-        List<UserEntity> result = query.getResultList();
-        if (result.isEmpty()) {
+
+        List<EmployeeZUPDTO> result = null;
+        try {
+            result = restService.getUserByPhone(username);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (Objects.nonNull(result) && result.isEmpty()) {
             logger.info("could not find username: " + username);
+            return null;
+        } if (Objects.isNull(result)) {
+            logger.info("The find response by user with username: " + username + " is null");
             return null;
         }
 
-        return new UserAdapter(session, realm, model, result.get(0));
+        EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
+
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername(employeeZUPDTOOne.getPhone());
+        userEntity.setEmail(employeeZUPDTOOne.getEmail());
+        userEntity.setId(employeeZUPDTOOne.getId());
+        userEntity.setPhone(employeeZUPDTOOne.getPhone());
+
+        return new UserAdapter(session, realm, model, userEntity);
     }
 
     @Override
