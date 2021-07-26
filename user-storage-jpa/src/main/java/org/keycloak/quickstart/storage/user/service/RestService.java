@@ -26,7 +26,10 @@ public class RestService {
     public static final String PASSWORD = "2.JqSC_1kLGJi_cGEyIXKHISqxRR2g";
 
     public static final String OAUTH_URL = "https://apium.varus.ua/oauth/token";
-    public static final String PROCEDURE_URL = "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOEE_WITH_FILTER";
+    public static final String GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL =
+            "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOEE_WITH_FILTER";
+    public static final String GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL =
+            "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOEE_WITH_FILTER";
 
     private ApiumResponseDTO loginToReports1C() {
         HttpHeaders headers = new HttpHeaders();
@@ -72,7 +75,7 @@ public class RestService {
 
         logger.info("Send request getUserByPhone: " + phone);
 
-        return processResponse(new RestTemplate().exchange(PROCEDURE_URL,
+        return processResponse(new RestTemplate().exchange(GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL,
                 HttpMethod.POST, httpEntity, new ParameterizedTypeReference<PaginationDTO<EmployeeZUPDTO>>() {}));
     }
 
@@ -88,8 +91,24 @@ public class RestService {
 
         logger.info("Send request getUserByEmployeeId: " + employeeId);
 
-        return processResponse(new RestTemplate().exchange(PROCEDURE_URL,
+        return processResponse(new RestTemplate().exchange(GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL,
                 HttpMethod.POST, httpEntity, new ParameterizedTypeReference<PaginationDTO<EmployeeZUPDTO>>() {}));
+    }
+
+    public List<EmployeeZUPDTO> getAllUsers() throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(loginToReports1C().getAccess_token());
+
+        HttpEntity<?> httpEntity = new HttpEntity<>(headers);
+
+        logger.info("Send request getAllUsers");
+
+        ResponseEntity<PaginationDTO<EmployeeZUPDTO>> responseEntity = new RestTemplate().exchange(
+                GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL,
+                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<PaginationDTO<EmployeeZUPDTO>>() {});
+
+        return processResponse(responseEntity);
     }
 
 }

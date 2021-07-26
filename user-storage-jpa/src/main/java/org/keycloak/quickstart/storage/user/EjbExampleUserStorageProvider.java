@@ -45,6 +45,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -298,18 +299,31 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
-        TypedQuery<UserEntity> query = em.createNamedQuery("searchForUser", UserEntity.class);
-        query.setParameter("search", "%" + search.toLowerCase() + "%");
-        if (firstResult != -1) {
-            query.setFirstResult(firstResult);
+
+        List<EmployeeZUPDTO> result = null;
+        try {
+            result = restService.getUserByPhone(search);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        if (maxResults != -1) {
-            query.setMaxResults(maxResults);
+
+        if (Objects.nonNull(result) && result.isEmpty()) {
+            logger.info("could not find username: " + search);
+            return null;
+        } if (Objects.isNull(result)) {
+            logger.info("The find response by user with username: " + search + " is null");
+            return null;
         }
-        List<UserEntity> results = query.getResultList();
-        List<UserModel> users = new LinkedList<>();
-        for (UserEntity entity : results) users.add(new UserAdapter(session, realm, model, entity));
-        return users;
+
+        EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
+
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername(employeeZUPDTOOne.getPhone());
+        userEntity.setEmail(employeeZUPDTOOne.getEmail());
+        userEntity.setId(employeeZUPDTOOne.getId());
+        userEntity.setPhone(employeeZUPDTOOne.getPhone());
+
+        return Collections.singletonList(new UserAdapter(session, realm, model, userEntity));
     }
 
     @Override
@@ -319,7 +333,29 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(Map<String, String> params, RealmModel realm, int firstResult, int maxResults) {
-        return Collections.EMPTY_LIST;
+        List<EmployeeZUPDTO> result = null;
+        try {
+            result = restService.getAllUsers();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (Objects.nonNull(result) && result.isEmpty()) {
+            logger.info("could not find all users: ");
+            return null;
+        } if (Objects.isNull(result)) {
+            logger.info("The all user request is null");
+            return null;
+        }
+
+        return result.stream().map(uZUP -> {
+            UserEntity userEntity = new UserEntity();
+            userEntity.setUsername(uZUP.getPhone());
+            userEntity.setEmail(uZUP.getEmail());
+            userEntity.setId(uZUP.getId());
+            userEntity.setPhone(uZUP.getPhone());
+            return new UserAdapter(session, realm, model, userEntity);
+        }).collect(Collectors.toList());
     }
 
     @Override
