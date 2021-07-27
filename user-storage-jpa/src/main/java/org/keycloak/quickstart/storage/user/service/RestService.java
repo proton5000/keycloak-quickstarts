@@ -29,7 +29,7 @@ public class RestService {
     public static final String GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL =
             "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOEE_WITH_FILTER";
     public static final String GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL =
-            "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOEE_WITH_FILTER";
+            "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOYEE_DTO_ONLY_WORKING";
 
     private ApiumResponseDTO loginToReports1C() {
         HttpHeaders headers = new HttpHeaders();

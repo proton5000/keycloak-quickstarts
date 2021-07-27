@@ -20,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import java.time.LocalDateTime;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -43,6 +44,7 @@ public class UserEntity {
     private String email;
     private String password;
     private String phone;
+    private LocalDateTime last_update_date_time;
 
     public String getId() {
         return id;
@@ -82,5 +84,25 @@ public class UserEntity {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public LocalDateTime getLast_update_date_time() {
+        return last_update_date_time;
+    }
+
+    public void setLast_update_date_time(LocalDateTime last_update_date_time) {
+        this.last_update_date_time = last_update_date_time;
+    }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", phone='" + phone + '\'' +
+                ", last_update_date_time=" + last_update_date_time +
+                '}';
     }
 }

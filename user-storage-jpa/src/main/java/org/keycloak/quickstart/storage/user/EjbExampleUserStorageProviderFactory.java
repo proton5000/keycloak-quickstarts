@@ -19,9 +19,21 @@ package org.keycloak.quickstart.storage.user;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.quickstart.storage.user.util.DbUtil;
 import org.keycloak.storage.UserStorageProviderFactory;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.naming.InitialContext;
+import javax.persistence.EntityManager;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+import static org.keycloak.quickstart.storage.user.CustomUserStorageProviderConstants.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -31,18 +43,81 @@ public class EjbExampleUserStorageProviderFactory implements UserStorageProvider
     public static final String PROVIDER_ID = "example-user-storage-jpa";
 
     private static final Logger logger = Logger.getLogger(EjbExampleUserStorageProviderFactory.class);
+    protected final List<ProviderConfigProperty> configMetadata;
+
+    public EjbExampleUserStorageProviderFactory() {
+
+        // Create config metadata
+        configMetadata = ProviderConfigurationBuilder.create()
+                .property()
+                .name(CONFIG_KEY_JDBC_DRIVER)
+                .label("JDBC Driver Class")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue("org.postgresql.Driver")
+                .helpText("Fully qualified class name of the JDBC driver")
+                .add()
+                .property()
+                .name(CONFIG_KEY_JDBC_URL)
+                .label("JDBC URL")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue("jdbc:postgresql://db.rm.net.omega/keycloak")
+                .helpText("JDBC URL used to connect to the user database")
+                .add()
+                .property()
+                .name(CONFIG_KEY_DB_USERNAME)
+                .label("Database User")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue("srv_uac")
+                .helpText("Username used to connect to the database")
+                .add()
+                .property()
+                .name(CONFIG_KEY_DB_PASSWORD)
+                .label("Database Password")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue("rK8nB1oB7wY2bD2i")
+                .helpText("Password used to connect to the database")
+                .secret(true)
+                .add()
+                .property()
+                .name(CONFIG_KEY_VALIDATION_QUERY)
+                .label("SQL Validation Query")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .helpText("SQL query used to validate a connection")
+                .defaultValue("select 1")
+                .add()
+                .build();
+    }
 
     @Override
     public EjbExampleUserStorageProvider create(KeycloakSession session, ComponentModel model) {
-        try {
-            InitialContext ctx = new InitialContext();
-            EjbExampleUserStorageProvider provider = (EjbExampleUserStorageProvider)ctx.lookup("java:global/user-storage-jpa-example/" + EjbExampleUserStorageProvider.class.getSimpleName());
-            provider.setModel(model);
-            provider.setSession(session);
-            return provider;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+//        try {
+//            InitialContext ctx = new InitialContext();
+//            EjbExampleUserStorageProvider provider = (EjbExampleUserStorageProvider)ctx.lookup("java:global/user-storage-jpa-example/" + EjbExampleUserStorageProvider.class.getSimpleName());
+//            provider.setModel(model);
+//            provider.setSession(session);
+//            return provider;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+
+        logger.info("Populating database...");
+        try (Connection c = DbUtil.getConnection(model)) {
+            c.createStatement().execute("create table if not exists users (\n" +
+                    "  id serial primary key not null,\n" +
+                    "  username varchar(64) unique not null, email varchar(128) unique,\n" +
+                    "  password varchar(64), phone varchar(128) unique,\n" +
+                    "  last_update_date_time timestamp with time zone not null)");
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
         }
+
+        return new EjbExampleUserStorageProvider(model, session);
+    }
+
+    // Configuration support methods
+    @Override
+    public List<ProviderConfigProperty> getConfigProperties() {
+        return configMetadata;
     }
 
     @Override
