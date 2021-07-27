@@ -16,7 +16,6 @@
  */
 package org.keycloak.quickstart.storage.user;
 
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
@@ -33,7 +32,6 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public class UserAdapter extends AbstractUserAdapterFederatedStorage {
-    private static final Logger logger = Logger.getLogger(UserAdapter.class);
     protected UserEntity entity;
     protected String keycloakId;
 

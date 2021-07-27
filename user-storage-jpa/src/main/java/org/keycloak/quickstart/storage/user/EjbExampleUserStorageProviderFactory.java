@@ -23,12 +23,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.quickstart.storage.user.util.DbUtil;
 import org.keycloak.storage.UserStorageProviderFactory;
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.core.io.ClassPathResource;
-
-import javax.naming.InitialContext;
-import javax.persistence.EntityManager;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -90,16 +84,6 @@ public class EjbExampleUserStorageProviderFactory implements UserStorageProvider
 
     @Override
     public EjbExampleUserStorageProvider create(KeycloakSession session, ComponentModel model) {
-//        try {
-//            InitialContext ctx = new InitialContext();
-//            EjbExampleUserStorageProvider provider = (EjbExampleUserStorageProvider)ctx.lookup("java:global/user-storage-jpa-example/" + EjbExampleUserStorageProvider.class.getSimpleName());
-//            provider.setModel(model);
-//            provider.setSession(session);
-//            return provider;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-
         logger.info("Populating database...");
         try (Connection c = DbUtil.getConnection(model)) {
             c.createStatement().execute("create table if not exists users (\n" +

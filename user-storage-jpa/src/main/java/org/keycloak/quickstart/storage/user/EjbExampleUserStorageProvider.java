@@ -117,32 +117,7 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
-//        logger.info("getUserById: " + id);
-//        List<EmployeeZUPDTO> result = null;
-//        StorageId sid = new StorageId(id);
-//        logger.info("getExternalId: " + sid.getExternalId());
-//        try {
-//            result = restService.getUserByEmployeeId(sid.getExternalId());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        if (Objects.nonNull(result) && result.isEmpty()) {
-//            logger.info("could not find user by id: " + id);
-//            return null;
-//        } else if (Objects.isNull(result)) {
-//            logger.info("The find response by user with id: " + id + " is null");
-//            return null;
-//        }
-//
-//        EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
-//
-//        UserEntity entity = new UserEntity();
-//        entity.setUsername(employeeZUPDTOOne.getPhone());
-//        entity.setEmail(employeeZUPDTOOne.getEmail());
-//        entity.setId(employeeZUPDTOOne.getId());
-//        entity.setPhone(employeeZUPDTOOne.getPhone());
-
+        logger.info("getUserById: " + id);
         UserEntity userEntity = null;
         try {
             userEntity = userService.getUserById(new StorageId(id).getExternalId(), model);
@@ -156,32 +131,6 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
         logger.info("getUserByUsername: " + username);
-
-//        List<EmployeeZUPDTO> result = null;
-//        try {
-//            result = restService.getUserByPhone(username);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        if (Objects.nonNull(result) && result.isEmpty()) {
-//            logger.info("could not find username: " + username);
-//            return null;
-//        } if (Objects.isNull(result)) {
-//            logger.info("The find response by user with username: " + username + " is null");
-//            return null;
-//        }
-//
-//        EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
-//
-//        UserEntity userEntity = new UserEntity();
-//        userEntity.setUsername(employeeZUPDTOOne.getPhone());
-//        userEntity.setEmail(employeeZUPDTOOne.getEmail());
-//        userEntity.setId(employeeZUPDTOOne.getId());
-//        userEntity.setPhone(employeeZUPDTOOne.getPhone());
-//
-//        return new UserAdapter(session, realm, model, userEntity);
-
         UserEntity userEntity = null;
         try {
             userEntity = userService.getUserByOption(username, model);
@@ -195,12 +144,6 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
         logger.info("getUserByEmail: " + email);
-//        TypedQuery<UserEntity> query = em.createNamedQuery("getUserByEmail", UserEntity.class);
-//        query.setParameter("email", email);
-//        List<UserEntity> result = query.getResultList();
-//        if (result.isEmpty()) return null;
-//        return new UserAdapter(session, realm, model, result.get(0));
-
         UserEntity userEntity = null;
         try {
             userEntity = userService.getUserByOption(email, model);
@@ -340,32 +283,6 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
-
-//        List<EmployeeZUPDTO> result = null;
-//        try {
-//            result = restService.getUserByPhone(search);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        if (Objects.nonNull(result) && result.isEmpty()) {
-//            logger.info("could not find username: " + search);
-//            return null;
-//        } if (Objects.isNull(result)) {
-//            logger.info("The find response by user with username: " + search + " is null");
-//            return null;
-//        }
-//
-//        EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
-//
-//        UserEntity userEntity = new UserEntity();
-//        userEntity.setUsername(employeeZUPDTOOne.getPhone());
-//        userEntity.setEmail(employeeZUPDTOOne.getEmail());
-//        userEntity.setId(employeeZUPDTOOne.getId());
-//        userEntity.setPhone(employeeZUPDTOOne.getPhone());
-//
-//        return Collections.singletonList(new UserAdapter(session, realm, model, userEntity));
-
         UserEntity userEntity = null;
         try {
             userEntity = userService.getUserByOption(search, model);

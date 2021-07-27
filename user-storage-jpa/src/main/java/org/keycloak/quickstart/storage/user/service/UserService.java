@@ -18,6 +18,7 @@ public class UserService {
 
     private static final Logger logger = Logger.getLogger(UserService.class);
     private static final RestService restService = new RestService();
+    private static final long UPDATE_HOURS = 3;
 
     public UserEntity getUserByOption(String option, ComponentModel model) throws Exception {
 
@@ -32,7 +33,7 @@ public class UserService {
             prepareStatementSelect.execute();
 
             ResultSet rs = prepareStatementSelect.getResultSet();
-            if (rs.next() && rs.getTimestamp("last_update_date_time").toLocalDateTime().isBefore(LocalDateTime.now().plusHours(3))) {
+            if (rs.next() && rs.getTimestamp("last_update_date_time").toLocalDateTime().isBefore(LocalDateTime.now().plusHours(UPDATE_HOURS))) {
                 return matToUserEntity(rs);
             }
 
@@ -53,7 +54,7 @@ public class UserService {
             userEntity.setEmail(employeeZUPDTOOne.getEmail());
             userEntity.setPhone(employeeZUPDTOOne.getPhone());
 
-            if (rs.next() && rs.getTimestamp("last_update_date_time").toLocalDateTime().isAfter(LocalDateTime.now().plusHours(3))) {
+            if (rs.next() && rs.getTimestamp("last_update_date_time").toLocalDateTime().isAfter(LocalDateTime.now().plusHours(UPDATE_HOURS))) {
                 return updateUser(userEntity, model);
             } else {
                 return createUser(userEntity, model);
