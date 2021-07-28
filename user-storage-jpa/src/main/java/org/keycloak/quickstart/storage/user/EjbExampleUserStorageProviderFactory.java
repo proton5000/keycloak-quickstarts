@@ -88,7 +88,7 @@ public class EjbExampleUserStorageProviderFactory implements UserStorageProvider
         try (Connection c = DbUtil.getConnection(model)) {
             c.createStatement().execute("create table if not exists users (\n" +
                     "  id serial primary key not null,\n" +
-                    "  username varchar(64) unique not null, email varchar(128) unique,\n" +
+                    "  username varchar(64) unique not null, email varchar(128),\n" +
                     "  password varchar(64), phone varchar(128) unique,\n" +
                     "  last_update_date_time timestamp with time zone not null)");
         } catch (SQLException ex) {

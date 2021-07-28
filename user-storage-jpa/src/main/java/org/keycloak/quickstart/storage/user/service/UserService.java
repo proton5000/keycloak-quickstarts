@@ -11,8 +11,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static org.keycloak.quickstart.storage.user.service.RestService.GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL;
 
 public class UserService {
 
@@ -33,7 +37,10 @@ public class UserService {
             prepareStatementSelect.execute();
 
             ResultSet rs = prepareStatementSelect.getResultSet();
-            if (rs.next() && rs.getTimestamp("last_update_date_time").toLocalDateTime().isBefore(LocalDateTime.now().plusHours(UPDATE_HOURS))) {
+            boolean isResultSet = rs.next();
+
+            if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+                    .isAfter(LocalDateTime.now())) {
                 return matToUserEntity(rs);
             }
 
@@ -54,7 +61,9 @@ public class UserService {
             userEntity.setEmail(employeeZUPDTOOne.getEmail());
             userEntity.setPhone(employeeZUPDTOOne.getPhone());
 
-            if (rs.next() && rs.getTimestamp("last_update_date_time").toLocalDateTime().isAfter(LocalDateTime.now().plusHours(UPDATE_HOURS))) {
+            if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+                    .isBefore(LocalDateTime.now())) {
+                userEntity.setId(rs.getInt("id"));
                 return updateUser(userEntity, model);
             } else {
                 return createUser(userEntity, model);
@@ -78,10 +87,92 @@ public class UserService {
         }
     }
 
+    private List<UserEntity> getAllCachedUsers(ComponentModel model) {
+
+        List<UserEntity> userEntityList = new ArrayList<>();
+
+        try (Connection c = DbUtil.getConnection(model)) {
+
+            PreparedStatement prepareStatementSelect = c.prepareStatement("select * from users");
+            prepareStatementSelect.execute();
+
+            ResultSet rs = prepareStatementSelect.getResultSet();
+
+            while (rs.next()) {
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(rs.getInt("id"));
+                userEntity.setUsername(rs.getString("username"));
+                userEntity.setEmail(rs.getString("email"));
+                userEntity.setPhone(rs.getString("phone"));
+                userEntity.setLast_update_date_time(rs.getTimestamp("last_update_date_time").toLocalDateTime());
+                userEntityList.add(userEntity);
+            }
+
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
+        }
+        return userEntityList;
+    }
+
+    public List<UserEntity> getAllUsers(ComponentModel model) {
+
+        List<EmployeeZUPDTO> result = null;
+        try {
+            result = restService.getAllUsers();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (Objects.nonNull(result) && result.isEmpty()) {
+            logger.info("Could not find all users by procedure: " + GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL);
+            logger.info("Return cached users");
+            return getAllCachedUsers(model);
+        } if (Objects.isNull(result)) {
+            logger.info("The all user request: " + GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL + " is null");
+            logger.info("Return cached users");
+            return getAllCachedUsers(model);
+        }
+
+        return result.parallelStream().map(userZup -> {
+
+            try (Connection c = DbUtil.getConnection(model)) {
+
+                PreparedStatement prepareStatementSelect = c.prepareStatement("select * from users where username = ?");
+                prepareStatementSelect.setString(1, userZup.getPhone());
+                prepareStatementSelect.execute();
+
+                ResultSet rs = prepareStatementSelect.getResultSet();
+                boolean isResultSet = rs.next();
+
+                if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+                        .isAfter(LocalDateTime.now())) {
+                    return matToUserEntity(rs);
+                }
+
+                UserEntity userEntity = new UserEntity();
+                userEntity.setUsername(userZup.getPhone());
+                userEntity.setEmail(userZup.getEmail());
+                userEntity.setPhone(userZup.getPhone());
+
+                if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+                        .isBefore(LocalDateTime.now())) {
+                    userEntity.setId(rs.getInt("id"));
+                    return updateUser(userEntity, model);
+                } else {
+                    return createUser(userEntity, model);
+                }
+
+            } catch (Exception ex) {
+                throw new RuntimeException("Database error:" + ex.getMessage(), ex);
+            }
+
+        }).collect(Collectors.toList());
+    }
+
     private UserEntity matToUserEntity(ResultSet rs) throws SQLException {
         logger.info("matToUserEntity: " + rs);
         UserEntity userEntity = new UserEntity();
-        userEntity.setId(rs.getString("id"));
+        userEntity.setId(rs.getInt("id"));
         userEntity.setUsername(rs.getString("username"));
         userEntity.setEmail(rs.getString("email"));
         userEntity.setPhone(rs.getString("phone"));
@@ -118,7 +209,7 @@ public class UserService {
             prepareStatementUpdate.setString(2, userEntity.getEmail());
             prepareStatementUpdate.setString(3, userEntity.getPhone());
             prepareStatementUpdate.setObject(4, LocalDateTime.now());
-            prepareStatementUpdate.setString(5, userEntity.getId());
+            prepareStatementUpdate.setInt(5, userEntity.getId());
             prepareStatementUpdate.execute();
 
             return getUserByOption(userEntity.getUsername(), model);

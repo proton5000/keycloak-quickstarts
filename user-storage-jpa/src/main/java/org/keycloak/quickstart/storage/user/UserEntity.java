@@ -37,7 +37,7 @@ import java.time.LocalDateTime;
 @Entity
 public class UserEntity {
     @Id
-    private String id;
+    private Integer id;
 
 
     private String username;
@@ -46,11 +46,11 @@ public class UserEntity {
     private String phone;
     private LocalDateTime last_update_date_time;
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

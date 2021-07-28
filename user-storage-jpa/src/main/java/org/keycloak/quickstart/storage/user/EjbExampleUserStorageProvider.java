@@ -30,10 +30,8 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
-import org.keycloak.quickstart.storage.user.dto.EmployeeZUPDTO;
 import org.keycloak.quickstart.storage.user.service.RestService;
 import org.keycloak.quickstart.storage.user.service.UserService;
-import org.keycloak.quickstart.storage.user.util.DbUtil;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
@@ -46,10 +44,6 @@ import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -157,7 +151,6 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel addUser(RealmModel realm, String username) {
         UserEntity entity = new UserEntity();
-        entity.setId(UUID.randomUUID().toString());
         entity.setUsername(username);
         em.persist(entity);
         logger.info("added user: " + username);
@@ -302,29 +295,8 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(Map<String, String> params, RealmModel realm, int firstResult, int maxResults) {
-        List<EmployeeZUPDTO> result = null;
-        try {
-            result = restService.getAllUsers();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (Objects.nonNull(result) && result.isEmpty()) {
-            logger.info("could not find all users: ");
-            return null;
-        } if (Objects.isNull(result)) {
-            logger.info("The all user request is null");
-            return null;
-        }
-
-        return result.stream().map(uZUP -> {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setUsername(uZUP.getPhone());
-            userEntity.setEmail(uZUP.getEmail());
-            userEntity.setId(uZUP.getId());
-            userEntity.setPhone(uZUP.getPhone());
-            return new UserAdapter(session, realm, model, userEntity);
-        }).collect(Collectors.toList());
+        return userService.getAllUsers(model).stream()
+                .map(userEntity -> new UserAdapter(session, realm, model, userEntity)).collect(Collectors.toList());
     }
 
     @Override
