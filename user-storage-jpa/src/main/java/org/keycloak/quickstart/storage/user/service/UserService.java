@@ -170,7 +170,7 @@ public class UserService {
     }
 
     private UserEntity matToUserEntity(ResultSet rs) throws SQLException {
-        logger.info("matToUserEntity: " + rs);
+        logger.info("matToUserEntity the user with username: " + rs.getString("username"));
         UserEntity userEntity = new UserEntity();
         userEntity.setId(rs.getInt("id"));
         userEntity.setUsername(rs.getString("username"));
