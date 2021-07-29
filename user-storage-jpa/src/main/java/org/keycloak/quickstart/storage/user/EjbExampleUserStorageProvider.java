@@ -159,10 +159,15 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public boolean removeUser(RealmModel realm, UserModel user) {
-        String persistenceId = StorageId.externalId(user.getId());
-        UserEntity entity = em.find(UserEntity.class, persistenceId);
-        if (entity == null) return false;
-        em.remove(entity);
+        String id = new StorageId(user.getId()).getExternalId();
+        logger.info("removeUser id: " + id);
+        try {
+            UserEntity userEntity = userService.getUserById(id, model);
+            if (Objects.isNull(userEntity)) return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        userService.removeUser(id, model);
         return true;
     }
 

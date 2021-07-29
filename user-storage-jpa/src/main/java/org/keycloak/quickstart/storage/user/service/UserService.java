@@ -247,4 +247,15 @@ public class UserService {
             throw new RuntimeException("Database error:" + ex.getMessage(), ex);
         }
     }
+
+    public void removeUser(String id, ComponentModel model) {
+        logger.info("removeUser id: " + id);
+        try (Connection c = DbUtil.getConnection(model)) {
+            PreparedStatement prepareStatementDelete = c.prepareStatement("delete from users where id = ?");
+            prepareStatementDelete.setInt(1, Integer.parseInt(id));
+            prepareStatementDelete.execute();
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
+        }
+    }
 }
