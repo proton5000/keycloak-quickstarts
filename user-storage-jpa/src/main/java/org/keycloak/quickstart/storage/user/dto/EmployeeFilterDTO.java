@@ -1,7 +1,5 @@
 package org.keycloak.quickstart.storage.user.dto;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
 import java.time.LocalDate;
 
 public class EmployeeFilterDTO {
@@ -34,7 +32,6 @@ public class EmployeeFilterDTO {
     String inn;
     String positionCode;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     LocalDate dateOfReceipt;
     String employeeId;
     String shopId;

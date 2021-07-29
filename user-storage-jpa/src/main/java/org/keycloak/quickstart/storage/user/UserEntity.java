@@ -48,6 +48,21 @@ public class UserEntity {
     private String lastName;
     private LocalDateTime lastUpdateDateTime;
 
+    public UserEntity() {
+    }
+
+    public UserEntity(Integer id, String username, String email, String password, String phone, String firstName,
+                      String lastName, LocalDateTime lastUpdateDateTime) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.lastUpdateDateTime = lastUpdateDateTime;
+    }
+
     public Integer getId() {
         return id;
     }

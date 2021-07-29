@@ -56,12 +56,9 @@ public class UserService {
 
             EmployeeZUPDTO employeeZUPDTOOne = result.get(0);
 
-            UserEntity userEntity = new UserEntity();
-            userEntity.setUsername(employeeZUPDTOOne.getPhone());
-            userEntity.setEmail(employeeZUPDTOOne.getEmail());
-            userEntity.setPhone(employeeZUPDTOOne.getPhone());
-            userEntity.setFirstName(employeeZUPDTOOne.getName());
-            userEntity.setLastName(employeeZUPDTOOne.getSurname());
+            UserEntity userEntity = new UserEntity(null, employeeZUPDTOOne.getPhone(), employeeZUPDTOOne.getEmail(),
+                    null, employeeZUPDTOOne.getPhone(), employeeZUPDTOOne.getName(), employeeZUPDTOOne.getSurname(),
+                    null);
 
             if (isResultSet && rs.getTimestamp("lastUpdateDateTime").toLocalDateTime().plusHours(UPDATE_HOURS)
                     .isBefore(LocalDateTime.now())) {
@@ -101,15 +98,12 @@ public class UserService {
             ResultSet rs = prepareStatementSelect.getResultSet();
 
             while (rs.next()) {
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(rs.getInt("id"));
-                userEntity.setUsername(rs.getString("username"));
-                userEntity.setEmail(rs.getString("email"));
-                userEntity.setPhone(rs.getString("phone"));
-                userEntity.setFirstName(rs.getString("firstName"));
-                userEntity.setLastName(rs.getString("lastName"));
-                userEntity.setLastUpdateDateTime(rs.getTimestamp("lastUpdateDateTime").toLocalDateTime());
-                userEntityList.add(userEntity);
+                userEntityList.add(
+                        new UserEntity(rs.getInt("id"), rs.getString("username"),
+                                rs.getString("email"), null, rs.getString("phone"),
+                                rs.getString("firstName"), rs.getString("lastName"),
+                                rs.getTimestamp("lastUpdateDateTime").toLocalDateTime())
+                );
             }
 
         } catch (SQLException ex) {
@@ -153,12 +147,9 @@ public class UserService {
                     return matToUserEntity(rs);
                 }
 
-                UserEntity userEntity = new UserEntity();
-                userEntity.setUsername(userZup.getPhone());
-                userEntity.setEmail(userZup.getEmail());
-                userEntity.setPhone(userZup.getPhone());
-                userEntity.setFirstName(userZup.getName());
-                userEntity.setLastName(userZup.getSurname());
+                UserEntity userEntity = new UserEntity(null, userZup.getPhone(), userZup.getEmail(),
+                        null, userZup.getPhone(), userZup.getName(), userZup.getSurname(),
+                        null);
 
                 if (isResultSet && rs.getTimestamp("lastUpdateDateTime").toLocalDateTime().plusHours(UPDATE_HOURS)
                         .isBefore(LocalDateTime.now())) {
@@ -177,15 +168,11 @@ public class UserService {
 
     private UserEntity matToUserEntity(ResultSet rs) throws SQLException {
         logger.info("matToUserEntity the user with username: " + rs.getString("username"));
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(rs.getInt("id"));
-        userEntity.setUsername(rs.getString("username"));
-        userEntity.setEmail(rs.getString("email"));
-        userEntity.setPhone(rs.getString("phone"));
-        userEntity.setFirstName(rs.getString("firstName"));
-        userEntity.setLastName(rs.getString("lastName"));
-        userEntity.setLastUpdateDateTime(rs.getTimestamp("lastUpdateDateTime").toLocalDateTime());
-        return userEntity;
+
+        return new UserEntity(rs.getInt("id"), rs.getString("username"),
+                rs.getString("email"), null, rs.getString("phone"),
+                rs.getString("firstName"), rs.getString("lastName"),
+                rs.getTimestamp("lastUpdateDateTime").toLocalDateTime());
     }
 
     public UserEntity createUser(UserEntity userEntity, ComponentModel model) throws Exception {

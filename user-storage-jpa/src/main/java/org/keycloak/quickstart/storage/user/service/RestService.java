@@ -1,19 +1,24 @@
 package org.keycloak.quickstart.storage.user.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.quickstart.storage.user.dto.ApiumResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.EmployeeFilterDTO;
 import org.keycloak.quickstart.storage.user.dto.EmployeeZUPDTO;
-import org.keycloak.quickstart.storage.user.dto.PaginationDTO;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class RestService {
 
@@ -31,84 +36,68 @@ public class RestService {
     public static final String GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL =
             "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOYEE_DTO_ONLY_WORKING";
 
-    private ApiumResponseDTO loginToReports1C() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(BASIC_AUTH);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("grant_type", GRANT_TYPE);
-        parameters.add("client_id", CLIENT_ID);
-        parameters.add("username", USERNAME);
-        parameters.add("password", PASSWORD);
+    private ApiumResponseDTO loginToReports1C() throws IOException {
 
-        ResponseEntity<ApiumResponseDTO> responseEntity = new RestTemplate().exchange(OAUTH_URL, HttpMethod.POST,
-                new HttpEntity<>(parameters, headers), ApiumResponseDTO.class);
+        HttpPost post = new HttpPost(OAUTH_URL);
+        post.addHeader("content-type", "application/x-www-form-urlencoded");
+        post.addHeader("Authorization", "Basic " + BASIC_AUTH);
 
-        return responseEntity.getBody();
-    }
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("grant_type", GRANT_TYPE));
+        urlParameters.add(new BasicNameValuePair("client_id", CLIENT_ID));
+        urlParameters.add(new BasicNameValuePair("username", USERNAME));
+        urlParameters.add(new BasicNameValuePair("password", PASSWORD));
 
-    public <T> List<T> processResponse(ResponseEntity<PaginationDTO<T>> responseEntity) throws Exception {
-        if (Objects.requireNonNull(responseEntity.getBody()).getStatus().equals("ok")
-                && Objects.nonNull(responseEntity.getBody().getValue())) {
-            return responseEntity.getBody().getValue();
-        } else if (responseEntity.getBody().getStatus().equals("error")) {
-            throw new Exception(responseEntity.getBody().getCauseMessage());
-        } else if (responseEntity.getBody().getStatus().equals("fail")) {
-            throw new Exception(responseEntity.getBody().getCauseMessage());
-        } else if (StringUtils.isEmpty(responseEntity.getBody().getError())) {
-            throw new Exception(responseEntity.getBody().getCauseMessage());
-        } else {
-            throw new Exception();
+        post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(post)) {
+
+            return objectMapper.treeToValue(objectMapper.readTree(EntityUtils.toString(response.getEntity())), ApiumResponseDTO.class);
         }
     }
 
-    public List<EmployeeZUPDTO> getUserByPhone(String phone) throws Exception {
-        EmployeeFilterDTO employeeFilterDTO = new EmployeeFilterDTO();
-        employeeFilterDTO.setPhone(phone);
+    public List<EmployeeZUPDTO> getUserByPhone(String phone) throws IOException {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(loginToReports1C().getAccess_token());
+        HttpPost post = new HttpPost(GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL);
 
-        HttpEntity<EmployeeFilterDTO> httpEntity = new HttpEntity<>(employeeFilterDTO, headers);
+        post.addHeader("content-type", "application/json");
+        post.addHeader("Authorization", "Bearer " + loginToReports1C().getAccess_token());
+
+        EmployeeFilterDTO employeeFilterDTOn = new EmployeeFilterDTO();
+        employeeFilterDTOn.setPhone(phone);
+
+        post.setEntity(new StringEntity(objectMapper.writeValueAsString(employeeFilterDTOn)));
 
         logger.info("Send request getUserByPhone: " + phone);
 
-        return processResponse(new RestTemplate().exchange(GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL,
-                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<PaginationDTO<EmployeeZUPDTO>>() {}));
-    }
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(post)) {
 
-    public List<EmployeeZUPDTO> getUserByEmployeeId(String employeeId) throws Exception {
-        EmployeeFilterDTO employeeFilterDTO = new EmployeeFilterDTO();
-        employeeFilterDTO.setEmployeeId(employeeId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(loginToReports1C().getAccess_token());
-
-        HttpEntity<EmployeeFilterDTO> httpEntity = new HttpEntity<>(employeeFilterDTO, headers);
-
-        logger.info("Send request getUserByEmployeeId: " + employeeId);
-
-        return processResponse(new RestTemplate().exchange(GET_EMPLOYEE_WITH_FILTER_PROCEDURE_URL,
-                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<PaginationDTO<EmployeeZUPDTO>>() {}));
+            return Arrays.asList(objectMapper.treeToValue(
+                    objectMapper.readTree(EntityUtils.toString(response.getEntity())).get("data"),
+                    EmployeeZUPDTO[].class));
+        }
     }
 
     public List<EmployeeZUPDTO> getAllUsers() throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(loginToReports1C().getAccess_token());
 
-        HttpEntity<?> httpEntity = new HttpEntity<>(headers);
+        HttpPost post = new HttpPost(GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL);
+
+        post.addHeader("content-type", "application/json");
+        post.addHeader("Authorization", "Bearer " + loginToReports1C().getAccess_token());
 
         logger.info("Send request getAllUsers");
 
-        ResponseEntity<PaginationDTO<EmployeeZUPDTO>> responseEntity = new RestTemplate().exchange(
-                GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL,
-                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<PaginationDTO<EmployeeZUPDTO>>() {});
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(post)) {
 
-        return processResponse(responseEntity);
+            return Arrays.asList(objectMapper.treeToValue(
+                    objectMapper.readTree(EntityUtils.toString(response.getEntity())).get("data"),
+                    EmployeeZUPDTO[].class));
+        }
     }
 
 }
