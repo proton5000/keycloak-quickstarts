@@ -39,7 +39,7 @@ public class UserService {
             ResultSet rs = prepareStatementSelect.getResultSet();
             boolean isResultSet = rs.next();
 
-            if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+            if (isResultSet && rs.getTimestamp("lastUpdateDateTime").toLocalDateTime().plusHours(UPDATE_HOURS)
                     .isAfter(LocalDateTime.now())) {
                 return matToUserEntity(rs);
             }
@@ -60,8 +60,10 @@ public class UserService {
             userEntity.setUsername(employeeZUPDTOOne.getPhone());
             userEntity.setEmail(employeeZUPDTOOne.getEmail());
             userEntity.setPhone(employeeZUPDTOOne.getPhone());
+            userEntity.setFirstName(employeeZUPDTOOne.getName());
+            userEntity.setLastName(employeeZUPDTOOne.getSurname());
 
-            if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+            if (isResultSet && rs.getTimestamp("lastUpdateDateTime").toLocalDateTime().plusHours(UPDATE_HOURS)
                     .isBefore(LocalDateTime.now())) {
                 userEntity.setId(rs.getInt("id"));
                 return updateUser(userEntity, model);
@@ -104,7 +106,9 @@ public class UserService {
                 userEntity.setUsername(rs.getString("username"));
                 userEntity.setEmail(rs.getString("email"));
                 userEntity.setPhone(rs.getString("phone"));
-                userEntity.setLast_update_date_time(rs.getTimestamp("last_update_date_time").toLocalDateTime());
+                userEntity.setFirstName(rs.getString("firstName"));
+                userEntity.setLastName(rs.getString("lastName"));
+                userEntity.setLastUpdateDateTime(rs.getTimestamp("lastUpdateDateTime").toLocalDateTime());
                 userEntityList.add(userEntity);
             }
 
@@ -144,7 +148,7 @@ public class UserService {
                 ResultSet rs = prepareStatementSelect.getResultSet();
                 boolean isResultSet = rs.next();
 
-                if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+                if (isResultSet && rs.getTimestamp("lastUpdateDateTime").toLocalDateTime().plusHours(UPDATE_HOURS)
                         .isAfter(LocalDateTime.now())) {
                     return matToUserEntity(rs);
                 }
@@ -153,8 +157,10 @@ public class UserService {
                 userEntity.setUsername(userZup.getPhone());
                 userEntity.setEmail(userZup.getEmail());
                 userEntity.setPhone(userZup.getPhone());
+                userEntity.setFirstName(userZup.getName());
+                userEntity.setLastName(userZup.getSurname());
 
-                if (isResultSet && rs.getTimestamp("last_update_date_time").toLocalDateTime().plusHours(UPDATE_HOURS)
+                if (isResultSet && rs.getTimestamp("lastUpdateDateTime").toLocalDateTime().plusHours(UPDATE_HOURS)
                         .isBefore(LocalDateTime.now())) {
                     userEntity.setId(rs.getInt("id"));
                     return updateUser(userEntity, model);
@@ -176,7 +182,9 @@ public class UserService {
         userEntity.setUsername(rs.getString("username"));
         userEntity.setEmail(rs.getString("email"));
         userEntity.setPhone(rs.getString("phone"));
-        userEntity.setLast_update_date_time(rs.getTimestamp("last_update_date_time").toLocalDateTime());
+        userEntity.setFirstName(rs.getString("firstName"));
+        userEntity.setLastName(rs.getString("lastName"));
+        userEntity.setLastUpdateDateTime(rs.getTimestamp("lastUpdateDateTime").toLocalDateTime());
         return userEntity;
     }
 
@@ -185,11 +193,15 @@ public class UserService {
         try (Connection c = DbUtil.getConnection(model)) {
 
             PreparedStatement prepareStatementInsert =
-                    c.prepareStatement("insert into users (username, email, phone, last_update_date_time) values (?, ?, ?, ?)");
+                    c.prepareStatement("insert into users " +
+                            "(username, email, phone, firstName, lastName, lastUpdateDateTime)" +
+                            " values (?, ?, ?, ?, ?, ?)");
             prepareStatementInsert.setString(1, userEntity.getUsername());
             prepareStatementInsert.setString(2, userEntity.getEmail());
             prepareStatementInsert.setString(3, userEntity.getPhone());
-            prepareStatementInsert.setObject(4, LocalDateTime.now());
+            prepareStatementInsert.setString(4, userEntity.getFirstName());
+            prepareStatementInsert.setString(5, userEntity.getLastName());
+            prepareStatementInsert.setObject(6, LocalDateTime.now());
             prepareStatementInsert.execute();
 
             return getUserByOption(userEntity.getUsername(), model);
@@ -199,17 +211,34 @@ public class UserService {
         }
     }
 
+    public void updateUserPassword(String password, String id, ComponentModel model) {
+        logger.info("updateUserPassword, user id: " + id);
+        try (Connection c = DbUtil.getConnection(model)) {
+            PreparedStatement prepareStatementUpdate =
+                    c.prepareStatement("update users set password = ? where id = ?");
+            prepareStatementUpdate.setString(1, password);
+            prepareStatementUpdate.setInt(2, Integer.parseInt(id));
+            prepareStatementUpdate.execute();
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
+        }
+    }
+
     public UserEntity updateUser(UserEntity userEntity, ComponentModel model) throws Exception {
         logger.info("updateUser: " + userEntity);
         try (Connection c = DbUtil.getConnection(model)) {
             PreparedStatement prepareStatementUpdate =
-                    c.prepareStatement("update users set username = ?, email = ?, phone = ?, last_update_date_time = ? where id = ?");
+                    c.prepareStatement("update users " +
+                            "set username = ?, email = ?, phone = ?, firstName = ?, lastName = ?, " +
+                            "lastUpdateDateTime = ? where id = ?");
 
             prepareStatementUpdate.setString(1, userEntity.getUsername());
             prepareStatementUpdate.setString(2, userEntity.getEmail());
             prepareStatementUpdate.setString(3, userEntity.getPhone());
-            prepareStatementUpdate.setObject(4, LocalDateTime.now());
-            prepareStatementUpdate.setInt(5, userEntity.getId());
+            prepareStatementUpdate.setString(4, userEntity.getFirstName());
+            prepareStatementUpdate.setString(5, userEntity.getLastName());
+            prepareStatementUpdate.setObject(6, LocalDateTime.now());
+            prepareStatementUpdate.setInt(7, userEntity.getId());
             prepareStatementUpdate.execute();
 
             return getUserByOption(userEntity.getUsername(), model);

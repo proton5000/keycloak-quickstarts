@@ -71,6 +71,26 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
     }
 
     @Override
+    public String getFirstName() {
+        return entity.getFirstName();
+    }
+
+    @Override
+    public void setFirstName(String firstName) {
+        entity.setFirstName(firstName);
+    }
+
+    @Override
+    public String getLastName() {
+        return entity.getLastName();
+    }
+
+    @Override
+    public void setLastName(String lastName) {
+        entity.setLastName(lastName);
+    }
+
+    @Override
     public String getId() {
         return keycloakId;
     }

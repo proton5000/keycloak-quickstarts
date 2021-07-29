@@ -44,7 +44,9 @@ public class UserEntity {
     private String email;
     private String password;
     private String phone;
-    private LocalDateTime last_update_date_time;
+    private String firstName;
+    private String lastName;
+    private LocalDateTime lastUpdateDateTime;
 
     public Integer getId() {
         return id;
@@ -86,23 +88,41 @@ public class UserEntity {
         this.phone = phone;
     }
 
-    public LocalDateTime getLast_update_date_time() {
-        return last_update_date_time;
+    public LocalDateTime getLastUpdateDateTime() {
+        return lastUpdateDateTime;
     }
 
-    public void setLast_update_date_time(LocalDateTime last_update_date_time) {
-        this.last_update_date_time = last_update_date_time;
+    public void setLastUpdateDateTime(LocalDateTime lastUpdateDateTime) {
+        this.lastUpdateDateTime = lastUpdateDateTime;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     @Override
     public String toString() {
         return "UserEntity{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", phone='" + phone + '\'' +
-                ", last_update_date_time=" + last_update_date_time +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", lastUpdateDateTime=" + lastUpdateDateTime +
                 '}';
     }
 }

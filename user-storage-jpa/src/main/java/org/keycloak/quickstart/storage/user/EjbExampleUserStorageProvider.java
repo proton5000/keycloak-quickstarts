@@ -181,11 +181,12 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
+        logger.info("updateCredential, username: " + user.getUsername());
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) return false;
         UserCredentialModel cred = (UserCredentialModel)input;
         UserAdapter adapter = getUserAdapter(user);
         adapter.setPassword(cred.getValue());
-
+        userService.updateUserPassword(cred.getValue(), new StorageId(user.getId()).getExternalId(), model);
         return true;
     }
 
