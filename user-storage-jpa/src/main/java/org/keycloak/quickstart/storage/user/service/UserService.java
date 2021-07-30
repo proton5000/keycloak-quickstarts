@@ -73,7 +73,7 @@ public class UserService {
         }
     }
 
-    public UserEntity getUserById(String id, ComponentModel model) throws Exception {
+    public UserEntity getUserById(String id, ComponentModel model) {
         try (Connection c = DbUtil.getConnection(model)) {
             PreparedStatement prepareStatementSelect = c.prepareStatement("select * from users where id = ?");
             prepareStatementSelect.setInt(1, Integer.parseInt(id));
@@ -170,7 +170,7 @@ public class UserService {
         logger.info("matToUserEntity the user with username: " + rs.getString("username"));
 
         return new UserEntity(rs.getInt("id"), rs.getString("username"),
-                rs.getString("email"), null, rs.getString("phone"),
+                rs.getString("email"), rs.getString("password"), rs.getString("phone"),
                 rs.getString("firstName"), rs.getString("lastName"),
                 rs.getTimestamp("lastUpdateDateTime").toLocalDateTime());
     }

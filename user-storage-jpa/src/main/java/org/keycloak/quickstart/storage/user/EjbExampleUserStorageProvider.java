@@ -64,7 +64,6 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     private static final Logger logger = Logger.getLogger(EjbExampleUserStorageProvider.class);
     public static final String PASSWORD_CACHE_KEY = UserAdapter.class.getName() + ".password";
 
-    public static final RestService restService = new RestService();
     public static final UserService userService = new UserService();
 
     @PersistenceContext
@@ -226,11 +225,13 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
+        logger.info("isConfiguredFor");
         return supportsCredentialType(credentialType) && getPassword(user) != null;
     }
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
+        logger.info("isValid user with id: " + user.getId());
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) return false;
         UserCredentialModel cred = (UserCredentialModel)input;
         String password = getPassword(user);
@@ -238,13 +239,15 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     }
 
     public String getPassword(UserModel user) {
+        logger.info("getPassword for user with id: " + user.getId());
         String password = null;
         if (user instanceof CachedUserModel) {
             password = (String)((CachedUserModel)user).getCachedWith().get(PASSWORD_CACHE_KEY);
         } else if (user instanceof UserAdapter) {
             password = ((UserAdapter)user).getPassword();
         }
-        return password;
+        return (Objects.isNull(password)) ?
+                userService.getUserById(new StorageId(user.getId()).getExternalId(), model).getPassword() : password;
     }
 
     @Override
