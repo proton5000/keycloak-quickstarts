@@ -30,7 +30,7 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
-import org.keycloak.quickstart.storage.user.service.RestService;
+import org.keycloak.quickstart.storage.user.entity.ManzanaUser;
 import org.keycloak.quickstart.storage.user.service.UserService;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
@@ -111,7 +111,7 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
         logger.info("getUserById: " + id);
-        UserEntity userEntity = null;
+        ManzanaUser userEntity = null;
         try {
             userEntity = userService.getUserById(new StorageId(id).getExternalId(), model);
         } catch (Exception e) {
@@ -124,7 +124,7 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
         logger.info("getUserByUsername: " + username);
-        UserEntity userEntity = null;
+        ManzanaUser userEntity = null;
         try {
             userEntity = userService.getUserByOption(username, model);
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
         logger.info("getUserByEmail: " + email);
-        UserEntity userEntity = null;
+        ManzanaUser userEntity = null;
         try {
             userEntity = userService.getUserByOption(email, model);
         } catch (Exception e) {
@@ -149,8 +149,8 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public UserModel addUser(RealmModel realm, String username) {
-        UserEntity entity = new UserEntity();
-        entity.setUsername(username);
+        ManzanaUser entity = new ManzanaUser();
+        entity.setMobilePhone(username);
         em.persist(entity);
         logger.info("added user: " + username);
         return new UserAdapter(session, realm, model, entity);
@@ -161,7 +161,7 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
         String id = new StorageId(user.getId()).getExternalId();
         logger.info("removeUser id: " + id);
         try {
-            UserEntity userEntity = userService.getUserById(id, model);
+            ManzanaUser userEntity = userService.getUserById(id, model);
             if (Objects.isNull(userEntity)) return false;
         } catch (Exception e) {
             e.printStackTrace();
@@ -265,16 +265,16 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
 
-        TypedQuery<UserEntity> query = em.createNamedQuery("getAllUsers", UserEntity.class);
+        TypedQuery<ManzanaUser> query = em.createNamedQuery("getAllUsers", ManzanaUser.class);
         if (firstResult != -1) {
             query.setFirstResult(firstResult);
         }
         if (maxResults != -1) {
             query.setMaxResults(maxResults);
         }
-        List<UserEntity> results = query.getResultList();
+        List<ManzanaUser> results = query.getResultList();
         List<UserModel> users = new LinkedList<>();
-        for (UserEntity entity : results) users.add(new UserAdapter(session, realm, model, entity));
+        for (ManzanaUser entity : results) users.add(new UserAdapter(session, realm, model, entity));
         return users;
     }
 
@@ -285,7 +285,7 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
-        UserEntity userEntity = null;
+        ManzanaUser userEntity = null;
         try {
             userEntity = userService.getUserByOption(search, model);
         } catch (Exception e) {

@@ -85,17 +85,6 @@ public class EjbExampleUserStorageProviderFactory implements UserStorageProvider
     @Override
     public EjbExampleUserStorageProvider create(KeycloakSession session, ComponentModel model) {
         logger.info("Populating database...");
-        try (Connection c = DbUtil.getConnection(model)) {
-            c.createStatement().execute("create table if not exists users (" +
-                    "  id serial primary key not null," +
-                    "  username varchar(64) unique not null, email varchar(128)," +
-                    "  firstName varchar(64), lastName varchar(64)," +
-                    "  password varchar(64), phone varchar(64) unique," +
-                    "  lastUpdateDateTime timestamp with time zone not null)");
-        } catch (SQLException ex) {
-            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
-        }
-
         return new EjbExampleUserStorageProvider(model, session);
     }
 
