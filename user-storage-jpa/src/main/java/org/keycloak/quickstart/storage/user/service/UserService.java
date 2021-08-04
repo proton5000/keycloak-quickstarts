@@ -2,14 +2,10 @@ package org.keycloak.quickstart.storage.user.service;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.quickstart.storage.user.UserEntity;
-import org.keycloak.quickstart.storage.user.dto.EmployeeZUPDTO;
 import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserDTO;
 import org.keycloak.quickstart.storage.user.entity.ManzanaUser;
 import org.keycloak.quickstart.storage.user.util.DbUtil;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -319,7 +315,7 @@ public class UserService {
                             "requestedForUpdateEmailAddress = ?, lastUpdateDateTime = ? where id = ?");
 
             prepareStatementUpdate.setString(1, userEntity.getLastName());
-            prepareStatementUpdate.setString(2, userEntity.getLogin());
+            prepareStatementUpdate.setString(2, userEntity.getMobilePhone());
             prepareStatementUpdate.setString(3, userEntity.getFirstName());
             prepareStatementUpdate.setString(4, userEntity.getMiddleName());
             prepareStatementUpdate.setString(5, userEntity.getFullName());

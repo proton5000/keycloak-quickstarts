@@ -16,6 +16,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.quickstart.storage.user.dto.ApiumResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.EmployeeFilterDTO;
 import org.keycloak.quickstart.storage.user.dto.EmployeeZUPDTO;
+import org.keycloak.quickstart.storage.user.dto.KeycloakAuthResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserDTO;
 import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserResponseDTO;
 import org.keycloak.quickstart.storage.user.entity.ManzanaUser;
@@ -44,6 +45,11 @@ public class RestService {
     public static final String GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL =
             "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOYEE_DTO_ONLY_WORKING";
 
+    public static final String MANZANA_OAUTH_URL = "http://uac.net.omega:8080/auth/realms/staff/protocol/openid-connect/token";
+    public static final String MANZANA_GRANT_TYPE = "client_credentials";
+    public static final String MANZANA_CLIENT_ID = "manzana-api";
+    public static final String MANZANA_CLIENT_SECRET = "e0835a80-0d4e-4b29-a6b4-dd255f20fadc";
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private ApiumResponseDTO loginToReports1C() throws IOException {
@@ -67,12 +73,34 @@ public class RestService {
         }
     }
 
+    private KeycloakAuthResponseDTO loginToManzanaApi() throws IOException {
+
+        HttpPost post = new HttpPost(MANZANA_OAUTH_URL);
+        post.addHeader("content-type", "application/x-www-form-urlencoded");
+
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("grant_type", MANZANA_GRANT_TYPE));
+        urlParameters.add(new BasicNameValuePair("client_id", MANZANA_CLIENT_ID));
+        urlParameters.add(new BasicNameValuePair("client_secret", MANZANA_CLIENT_SECRET));
+
+        post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+        logger.info("loginToManzanaApi");
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(post)) {
+
+            return objectMapper.treeToValue(objectMapper.readTree(EntityUtils.toString(response.getEntity())), KeycloakAuthResponseDTO.class);
+        }
+    }
+
     public List<ManzanaUserDTO> getUserByPhone(String phone) throws IOException, URISyntaxException {
 
         URIBuilder builder = new URIBuilder(GET_MANZANA_USER_BY_PHONE_URL);
         builder.addParameter("phone", phone.replaceAll("[+]", ""));
 
         HttpGet get = new HttpGet(builder.build());
+        get.addHeader("Authorization", "Bearer " + loginToManzanaApi().getAccessToken());
 
         logger.info("Send request getUserByPhone: " + phone.replaceAll("[+]", ""));
 
