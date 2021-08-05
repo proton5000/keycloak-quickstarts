@@ -7,22 +7,16 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.quickstart.storage.user.dto.ApiumResponseDTO;
-import org.keycloak.quickstart.storage.user.dto.EmployeeFilterDTO;
-import org.keycloak.quickstart.storage.user.dto.EmployeeZUPDTO;
 import org.keycloak.quickstart.storage.user.dto.KeycloakAuthResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserDTO;
-import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserResponseDTO;
-import org.keycloak.quickstart.storage.user.entity.ManzanaUser;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +39,7 @@ public class RestService {
     public static final String GET_EMPLOYEE_DTO_ONLY_WORKING_PROCEDURE_URL =
             "https://apium.varus.ua/procedure/call/1310845557362655232/GET_EMPLOYEE_DTO_ONLY_WORKING";
 
-    public static final String MANZANA_OAUTH_URL = "http://uac.net.omega:8080/auth/realms/staff/protocol/openid-connect/token";
+    public static final String MANZANA_OAUTH_URL = "http://uac.net.omega:8080/auth/realms/client/protocol/openid-connect/token";
     public static final String MANZANA_GRANT_TYPE = "client_credentials";
     public static final String MANZANA_CLIENT_ID = "manzana-api";
     public static final String MANZANA_CLIENT_SECRET = "e0835a80-0d4e-4b29-a6b4-dd255f20fadc";

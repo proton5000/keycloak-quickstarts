@@ -7,7 +7,7 @@
     <persistence-unit name="user-storage-jpa-example">
         <jta-data-source>java:jboss/datasources/KeycloakDS</jta-data-source>
 
-        <class>org.keycloak.quickstart.storage.user.UserEntity</class>
+        <class>org.keycloak.quickstart.storage.user.entity.ManzanaUser</class>
 
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="update" />
