@@ -2,10 +2,12 @@ package org.keycloak.quickstart.storage.user.service;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
+import org.keycloak.quickstart.storage.user.dto.ValidateCodeResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserDTO;
 import org.keycloak.quickstart.storage.user.entity.ManzanaUser;
 import org.keycloak.quickstart.storage.user.util.DbUtil;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -81,6 +83,10 @@ public class UserService {
         } catch (SQLException ex) {
             throw new RuntimeException("Database error:" + ex.getMessage(), ex);
         }
+    }
+
+    public ValidateCodeResponseDTO validateUserOtp(String phone, String enteredCode) throws IOException {
+        return restService.validateOtp(phone, enteredCode);
     }
 
     private List<ManzanaUser> getAllCachedUsers(ComponentModel model) {

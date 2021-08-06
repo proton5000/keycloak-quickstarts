@@ -44,6 +44,7 @@ import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -235,7 +236,16 @@ public class EjbExampleUserStorageProvider implements UserStorageProvider,
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) return false;
         UserCredentialModel cred = (UserCredentialModel)input;
         String password = getPassword(user);
-        return password != null && password.equals(cred.getValue());
+        if (password != null && password.equals(cred.getValue())) {
+            return true;
+        } else {
+            try {
+                return userService.validateUserOtp(user.getUsername(), cred.getValue()).getResult();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
     }
 
     public String getPassword(UserModel user) {

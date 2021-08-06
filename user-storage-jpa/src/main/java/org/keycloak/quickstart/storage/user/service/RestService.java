@@ -14,6 +14,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.quickstart.storage.user.dto.ApiumResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.KeycloakAuthResponseDTO;
+import org.keycloak.quickstart.storage.user.dto.ValidateCodeResponseDTO;
 import org.keycloak.quickstart.storage.user.dto.manzana.ManzanaUserDTO;
 
 import java.io.IOException;
@@ -33,6 +34,8 @@ public class RestService {
     public static final String PASSWORD = "2.JqSC_1kLGJi_cGEyIXKHISqxRR2g";
 
     public static final String OAUTH_URL = "https://apium.varus.ua/oauth/token";
+
+    private static final String VALIDATE_OTP_URL = "https://oauth2.varus.ua/rest/otp/validate";
 
     public static final String GET_MANZANA_USER_BY_PHONE_URL="http://manzana-api.varus.ua/manzana-api/users/by-phone";
 
@@ -122,6 +125,30 @@ public class RestService {
             return Arrays.asList(objectMapper.treeToValue(
                     objectMapper.readTree(EntityUtils.toString(response.getEntity())).get("value"),
                     ManzanaUserDTO[].class));
+        }
+    }
+
+    public ValidateCodeResponseDTO validateOtp(String phone, String enteredCode) throws IOException {
+
+        HttpPost post = new HttpPost(VALIDATE_OTP_URL);
+        post.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        post.setEntity(new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("phone", phone),
+                new BasicNameValuePair("otp", enteredCode))));
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(post)) {
+
+            ValidateCodeResponseDTO validateCodeResponseDTO = null;
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                validateCodeResponseDTO = objectMapper.readValue(EntityUtils.toString(response.getEntity()), ValidateCodeResponseDTO.class);
+                logger.info("Validate otp code. Response: " + validateCodeResponseDTO);
+            } else {
+                logger.info("Validate otp code. Response status:" + response.getStatusLine());
+            }
+
+            return validateCodeResponseDTO;
         }
     }
 
