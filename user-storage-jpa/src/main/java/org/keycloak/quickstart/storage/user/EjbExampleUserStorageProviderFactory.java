@@ -21,10 +21,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
-import org.keycloak.quickstart.storage.user.util.DbUtil;
 import org.keycloak.storage.UserStorageProviderFactory;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 import static org.keycloak.quickstart.storage.user.CustomUserStorageProviderConstants.*;
@@ -34,7 +31,7 @@ import static org.keycloak.quickstart.storage.user.CustomUserStorageProviderCons
  * @version $Revision: 1 $
  */
 public class EjbExampleUserStorageProviderFactory implements UserStorageProviderFactory<EjbExampleUserStorageProvider> {
-    public static final String PROVIDER_ID = "example-user-storage-jpa";
+    public static final String PROVIDER_ID = "user-storage-jpa";
 
     private static final Logger logger = Logger.getLogger(EjbExampleUserStorageProviderFactory.class);
     protected final List<ProviderConfigProperty> configMetadata;

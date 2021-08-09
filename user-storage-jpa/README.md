@@ -1,10 +1,6 @@
 user-storage-jpa: User Storage Provider with EJB and JPA
 ========================================================
 
-Level: Beginner  
-Technologies: JavaEE, EJB, JPA  
-Summary: User Storage Provider with EJB and JPA  
-Target Product: <span>Keycloak</span>  
 Source: <https://github.com/keycloak/keycloak-quickstarts>  
 
 
@@ -18,64 +14,31 @@ Using the User Storage SPI this table is mapped to the <span>Keycloak</span> use
 runtime. Before using this example, you should probably read the User Storage SPI chapter of our server developer guide.
 
 
-System Requirements
--------------------
+The deployment module flow:
+----------------------------
 
-You need to have <span>Keycloak</span> running.
+create maven job - mvn clean package
 
-All you need to build this project is Java 8.0 (Java SDK 1.8) or later and Maven 3.3.3 or later.
+the *.jar file from target directory
+copy to the Keycloak server by path <keycloak_path>/standalone/deployments
 
-
-Build and Deploy the Quickstart
--------------------------------
-
-You must first deploy the datasource it uses.
-Start up the <span>Keycloak</span> server.  Then in the directory of this example type the following maven command:
-
-   ````
-   mvn -Padd-datasource install
-   ````
-
-**Note**: If the server runs on different port than `10090`, you have to specify it by setting a
-maven property `keycloak.management.port`.
-
-   ````
-   mvn -Padd-datasource install -Dkeycloak.management.port=9990
-   ````
-
-You only need to execute this maven command once.  If you execute this again, then you will get an error message that the datasource
-already exists.
-
-If you open the pom.xml file you'll see that the add-datasource profile creates an XA datasource using the built
-in H2 database that comes with the server.  An XA datasource is required because you cannot use two non-xa datasources
-in the same transaction.  The <span>Keycloak</span> database is non-xa.
-
-Another thing to note is that the xa-datasource created is in-memory only.  If you reboot the server, any users you've
-added or changes you've made to users loaded by this provider will be wiped clean.
-
-To deploy the provider, run the following maven command:
-
-   ````
-   mvn clean install wildfly:deploy
-   ````
-
-If you want to play with and modify the example, simply rerun the maven deploy command above and the new version will be hot deployed.
+the deployment process will start automatically, as the result you can see the
+file <jar_file_name>.jar.deployed in<keycloak_path>/standalone/deployments .
+The result of the deployment process - the file with the name of deployed module (jar file name)
+and in the end of file name will be the status of deployed procedure,
+deployed - successfully deployed, failed - failed deployed, undeployed - undeployed.
 
 Enable the Provider for a Realm
 -------------------------------
-Login to the <span>Keycloak</span> Admin Console and got to the User Federation tab.   You should now see your deployed provider in the add-provider list box.
-Add the provider, save it.  This will now enable the provider for the 'master' realm.  Because this provider implements the UserRegistrationProvider interface, any new user you create in the
-admin console or on the registration pages of <span>Keycloak</span>, will be created in the custom store used by the provider.  If you go
-to the Users tab in the Admin Console and create a new user, you'll be able to see the provider in action.
+Login to the <span>Keycloak</span> Admin Console and got to the User Federation tab.   
+You should now see your deployed provider in the add-provider list box.
+Add the provider, save it. This will now enable the provider for the realm.  
+Because this provider implements the UserRegistrationProvider interface, any new user you create in the
+admin console or on the registration pages of <span>Keycloak</span>, will be created in the custom store used by the provider.  
+If you go to the Users tab in the Admin Console and create a new user, you'll be able to see the provider in action.
 
-Integration test of the Quickstart
-----------------------------------
+All options will be set automatically from module, but it's possible to change it.
 
-1. Make sure you have an Keycloak server running with an admin user in the `master` realm or use the provided docker image.
-2. You need to have Chrome browser installed and updated to the latest version.
-3. Run `mvn test -Pkeycloak-remote`. (The datasource will be deployed automatically.)
-
-More Information
-----------------
-The User Storage SPI and how you can use Java EE to implement it is covered in detail in our server developer guide.
+![](keycloak-user-federation-1.png)
+![](keycloak-user-federation-2.png)
 

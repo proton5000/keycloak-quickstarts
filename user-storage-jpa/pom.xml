@@ -112,7 +112,7 @@
     </dependencyManagement>
 
     <build>
-        <finalName>user-storage-jpa-example</finalName>
+        <finalName>user-storage-jpa</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
